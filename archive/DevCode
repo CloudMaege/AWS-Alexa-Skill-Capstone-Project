@@ -1,0 +1,189 @@
+import json
+import boto3
+
+def lambda_handler(event, context):
+    # Instantiate Boto Client
+    client = boto3.client('ec2')
+
+    # Set Count Var
+    total_instance_count = 0
+
+    # Fetch Instances
+    fetchInstances = client.describe_instances(Filters=[{'Name': 'instance-state-name', 'Values': ['running', 'Running']}])
+    # logger.debug(json.dumps(fetchInstances, default=str))
+
+    # Parse Object for instance count
+    reservations = fetchInstances.get('Reservations', [])
+    if len(reservations) > 0:
+        total_instance_count = len(reservations[0].get('Instances', []))
+    else:
+        total_instance_count = 0
+
+    if total_instance_count > 0:
+        if total_instance_count == 1:
+            speech_text = f"There is {total_instance_count} instance running."
+        elif total_instance_count > 1:
+            speech_text = f"There are {total_instance_count} instances running."
+    else:
+        speech_text = "I could not find any servers running right now."
+
+    # handler_input.response_builder.speak(speech_text).set_card(
+    #     SimpleCard("Hello World", speech_text)).set_should_end_session(
+    #     False)
+
+    # Return response
+    return total_instance_count
+    
+        
+    
+
+
+
+
+
+
+
+
+
+import json
+import boto3
+
+def identify_instance_env(instance_obj):
+    # Iterate through instances and update environment counters
+    prod_list = []
+    stage_list = []
+    dev_list = []
+    untagged_list = []
+
+    for instance in instance_obj:
+        tag_list = instance.get('Tags', [])
+        env_found = False
+        for tag in tag_list:
+            tag_key = tag.get('Key')
+            # if tag_key = "Name":
+            #     print(tag.get('Value'))
+            if tag_key == "Env":
+                tag_value = tag.get('Value')
+                # Put the tag into the appropriate counter
+                if tag_value.lower() == "prod" or tag_value.lower() == "production":
+                    prod_list.append(instance)
+                    env_found = True
+                elif tag_value.lower() == "stage":
+                    stage_list.append(instance)
+                    env_found = True
+                elif tag_value.lower() == "dev" or tag_value.lower() == "development":
+                    dev_list.append(instance)
+                    env_found = True
+                break
+        if not env_found:
+            untagged_list.append(instance)
+        
+    # Create return object
+    response_object = {
+        "prod": prod_list,
+        "stage": stage_list,
+        "dev": dev_list,
+        "untagged": untagged_list
+    }
+    return response_object
+
+
+def lambda_handler(event, context):
+    # Instantiate Boto Client
+    client = boto3.client('ec2')
+
+    # Set Count Var
+    total_instance_count = 0
+    prod_count = 0
+    stage_count = 0
+    dev_count = 0
+    untagged_count = 0
+
+    # Fetch Instances
+    fetchInstances = client.describe_instances(Filters=[{'Name': 'instance-state-name', 'Values': ['running', 'Running']}])
+    # logger.debug(json.dumps(fetchInstances, default=str))
+
+    # Parse Object for instance count
+    reservations = fetchInstances.get('Reservations', [])
+    
+    # Update total instance count
+    if len(reservations) > 0:
+        total_instance_count = len(reservations[0].get('Instances', []))
+        running_instances = reservations[0].get('Instances', [])
+        if running_instances:
+            sorted_instances = identify_instance_env(running_instances)
+            
+            prod_count = len(sorted_instances.get('prod'))
+            stage_count = len(sorted_instances.get('stage'))
+            dev_count = len(sorted_instances.get('dev'))
+            untagged_count = len(sorted_instances.get('untagged'))
+    else:
+        total_instance_count = 0
+
+    if total_instance_count > 0:
+        if total_instance_count == 1:
+            instance_env = None
+            if prod_count > 0:
+                instance_env = "production"
+            elif stage_count > 0:
+                instance_env = "stage"
+            elif dev_count > 0:
+                instance_env = "development"
+            else:
+                instance_env = "untagged"
+            speech_text = f"There is {total_instance_count} {instance_env} instance currently running."
+        elif total_instance_count > 1:
+            speech_text = f"There are {total_instance_count} instances currently running. {prod_count} production instances, {stage_count} stage instances, {dev_count} dev instances, and {untagged_count} untagged."
+    else:
+        speech_text = "I could not find any servers running right now."
+
+    # handler_input.response_builder.speak(speech_text).set_card(
+    #     SimpleCard("Hello World", speech_text)).set_should_end_session(
+    #     False)
+
+    # Return response
+    return speech_text
+    
+    
+    
+    
+    
+    # def lambda_handler(event, context):
+    # # Instantiate Boto Client
+    # client = boto3.client('ec2')
+
+    # # Set Count Var
+    # total_instance_count = 0
+
+    # # Fetch Instances
+    # fetchInstances = client.describe_instances(Filters=[{'Name': 'instance-state-name', 'Values': ['running', 'Running']}])
+    # # logger.debug(json.dumps(fetchInstances, default=str))
+
+    # # Parse Object for instance count
+    # reservations = fetchInstances.get('Reservations', [])
+    # if len(reservations) > 0:
+    #     total_instance_count = len(reservations[0].get('Instances', []))
+    # else:
+    #     total_instance_count = 0
+
+    # if total_instance_count > 0:
+    #     if total_instance_count == 1:
+    #         speech_text = f"There is {total_instance_count} instance running."
+    #     elif total_instance_count > 1:
+    #         speech_text = f"There are {total_instance_count} instances running."
+    # else:
+    #     speech_text = "I could not find any servers running right now."
+
+    # # handler_input.response_builder.speak(speech_text).set_card(
+    # #     SimpleCard("Hello World", speech_text)).set_should_end_session(
+    # #     False)
+
+    # # Return response
+    # return total_instance_count
+    
+        
+    
+
+    
+        
+    

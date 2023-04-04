@@ -1,0 +1,218 @@
+AWSTemplateFormatVersion: "2010-09-09"
+# Description of what this CloudFormation Template is going to produce
+Description: AWS CloudFormation Template to deploy the roles and lambda infrastructure required to support an Alexa AWS admin helper skill.
+# StackName: SA-Launch-Capstone-Project
+
+##############################################################################
+# NOTES: This template uses Exports produced by the following CF Templates
+#-----------------------------------------------------------------------------
+# PreReq-Required-Templates:
+#   - None
+##############################################################################
+
+# ###############################################
+# Template Parameters:
+# User Input values required for this template
+# ###############################################
+Parameters:
+  CreateAlexaLambdaRole:
+    Description:  Create an Alexa Lambda role that would has the rights and privileges that would be required to support and exectute the Alexa AWS admin helper skill?
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+  
+
+# ################################################
+# Template MetaData:
+# Define Template Parameter Form rendering.
+# ################################################
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Template Parameters"
+        Parameters:
+          - CreateAlexaLambdaRole
+    ParameterLabels:
+      CreateAlexaLambdaRole:
+        default: Provision Alexa Skill IAM Lambda Role?
+
+
+# ###############################################
+# Template Mappings:
+# Define any static Key:Value mappings required.
+# ###############################################
+Mappings: 
+  RoleMap:
+    Roles:
+      AlexaSkillRoleName: Alexa-AWSAdminHelper-Skill-Lambda-Access-Role
+
+# ###############################################
+# Template Conditions:
+# Define any conditions for launching Resources.
+# ###############################################
+Conditions:
+  # True if the 'CreateAlexaLambdaRole' parameter was set to true
+  CreateRole: !Equals [!Ref CreateAlexaLambdaRole, "true"]
+
+
+# ###############################################
+# Template Resources:
+# Define AWS Resources that will be provisioned.
+# ###############################################
+Resources:
+  #========================
+  # IAM Role:
+  #========================
+  AlexaSkillRole:
+    Type: AWS::IAM::Role
+    Condition: CreateRole
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: Static Name assigned, via mapping, for export consistency accross regions/accounts
+    Properties:
+      RoleName: !FindInMap [ RoleMap, Roles, AlexaSkillRoleName ]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: Alexa-CloudVoice-Skill-Instance-Policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:DescribeRegions
+                  - ec2:DescribeInstanceStatus
+                  - ec2:StartInstances
+                  - ec2:StopInstances
+                Resource: '*'
+        - PolicyName: Alexa-CloudVoice-Skill-S3-Policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub arn:aws:s3:::${AlexaSkillCodeBucket}
+                  - !Sub arn:aws:s3:::${AlexaSkillCodeBucket}/*
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:ListAllMyBuckets
+                  - s3:GetBucketAcl
+                  - s3:GetBucketPublicAccessBlock
+                Resource: '*'
+        - PolicyName: Alexa-CloudVoice-Skill-CostExplorer-Policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ce:List*
+                  - ce:Describe*
+                  - ce:Get*
+                Resource: '*'
+      # AWSLambdaBasicExecutionRole managed policy contains log stream permissions only
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  AlexaSkillCodeBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W35
+            reason: Lambda code bucket doesn't require logging
+    Properties:
+      # Ensure that the total length of the bucketname does not exceed 64 chars
+      BucketName:
+        Fn::Join:
+          - '-'
+          - - !Ref AWS::AccountId
+            - 'alexa-skill-code'
+            - !Ref AWS::Region
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireLogs
+            ExpirationInDays: 365
+            Status: Enabled
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+  
+  AlexaSkillBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AlexaSkillCodeBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: 'DenyNonSecureTransport'
+            Effect: Deny
+            Principal:
+              AWS: '*'
+            Action:
+              - 's3:*'
+            Resource:
+              - !GetAtt 'AlexaSkillCodeBucket.Arn'
+              - !Join ['/', [!GetAtt 'AlexaSkillCodeBucket.Arn', '*']]
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+
+
+# ##############################################
+# Template Outputs:
+# Specify any outputs for the stack.
+# ##############################################
+Outputs:
+  # Role
+  AlexaSkillRoleName:
+    Condition: CreateRole
+    Description: The Name of the Lambda Role created for the Alexa AWSAdminHelper skill.
+    Value: !FindInMap [ RoleMap, Roles, AlexaSkillRoleName ]
+    Export:
+      Name: 'Alexa-AdminHelper-Lambda-Role'
+
+  AlexaSkillRoleArn:
+    Condition: CreateRole
+    Description: The ARN of the Lambda Role created for the Alexa AWSAdminHelper skill.
+    Value: !Join ['',['arn:aws:iam::', !Ref 'AWS::AccountId', ':role/', !FindInMap [ RoleMap, Roles, AlexaSkillRoleName ]]]
+    Export:
+      Name: 'Alexa-AdminHelper-Lambda-Role-ARN'
+  
+  # Code Bucket
+  AlexaSkillCodeBucketName:
+    Description: The Name of the S3 Bucket created to hold and deploy Alexa AWSAdminHelper skill code to/from.
+    Value: !Ref 'AlexaSkillCodeBucket'
+    Export:
+      Name: 'Alexa-AdminHelper-Code-Bucket'
+
+  AlexaSkillCodeBucketARN:
+    Description: The ARN of the S3 Bucket created to hold and deploy Alexa AWSAdminHelper skill code to/from.
+    Value: !GetAtt 'AlexaSkillCodeBucket.Arn'
+    Export:
+      Name: 'Alexa-AdminHelper-Code-Bucket-ARN'

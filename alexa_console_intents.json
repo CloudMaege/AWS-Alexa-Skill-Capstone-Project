@@ -1,0 +1,277 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "cloud voice",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GatherCostIntent",
+                    "slots": [],
+                    "samples": [
+                        "What is my cost for this month",
+                        "What's my cost for this month",
+                        "How much did I spend this month",
+                        "What is the cost",
+                        "What is the cost so far",
+                        "Tell me how much I have spent this month",
+                        "Tell me how much I've spent this month"
+                    ]
+                },
+                {
+                    "name": "GatherInstanceCountIntent",
+                    "slots": [],
+                    "samples": [
+                        "How many instances are running",
+                        "Tell me how many instances are running",
+                        "How many servers are running",
+                        "Tell me how many servers are running",
+                        "E C Two Report",
+                        "Give me an E C two report",
+                        "What is my E C two footprint"
+                    ]
+                },
+                {
+                    "name": "GatherProdCountIntent",
+                    "slots": [],
+                    "samples": [
+                        "How many prod instances are running",
+                        "How many production instances are running",
+                        "Tell me how many prod instances are running",
+                        "Tell me how many production instances are running",
+                        "How many prod servers are running",
+                        "How many production servers are running",
+                        "Tell me how many prod servers are running",
+                        "Tell me how many production servers are running"
+                    ]
+                },
+                {
+                    "name": "GatherStageCountIntent",
+                    "slots": [],
+                    "samples": [
+                        "How many stage instances are running",
+                        "How many staging instances are running",
+                        "Tell me how many stage instances are running",
+                        "Tell me how many staging instances are running",
+                        "How many stage servers are running",
+                        "How many staging servers are running",
+                        "Tell me how many stage servers are running",
+                        "Tell me how many staging servers are running"
+                    ]
+                },
+                {
+                    "name": "GatherDevCountIntent",
+                    "slots": [],
+                    "samples": [
+                        "How many dev instances are running",
+                        "How many development instances are running",
+                        "Tell me how many dev instances are running",
+                        "Tell me how many development instances are running",
+                        "How many dev servers are running",
+                        "How many development servers are running",
+                        "Tell me how many dev servers are running",
+                        "Tell me how many development servers are running"
+                    ]
+                },
+                {
+                    "name": "GatherUntaggedCountIntent",
+                    "slots": [],
+                    "samples": [
+                        "How many untagged instances are running",
+                        "How many instances are not tagged",
+                        "How many instances are missing tags",
+                        "Tell me how many untagged instances are running",
+                        "Tell me how many instances are not tagged",
+                        "Tell me how many instances are missing tags",
+                        "How many untagged servers are running",
+                        "How many servers are not tagged",
+                        "How many servers are missing tags",
+                        "Tell me how many untagged servers are running",
+                        "Tell me how many servers are not tagged",
+                        "Tell me how many servers are missing tags"
+                    ]
+                },
+                {
+                    "name": "StopNonProdInstancesIntent",
+                    "slots": [],
+                    "samples": [
+                        "Stop all instances",
+                        "Stop all servers",
+                        "Shutdown all instances",
+                        "Shutdown all servers",
+                        "Pull the plug"
+                    ]
+                },
+                {
+                    "name": "StopProdInstancesIntent",
+                    "slots": [],
+                    "samples": [
+                        "Stop all production instances",
+                        "Stop all production servers",
+                        "Stop all production",
+                        "Shutdown production",
+                        "Shutdown production instances",
+                        "Shutdown production servers",
+                        "Cause an outage"
+                    ]
+                },
+                {
+                    "name": "StopStageInstancesIntent",
+                    "slots": [],
+                    "samples": [
+                        "Stop all staging instances",
+                        "Stop all staging servers",
+                        "Stop all staging",
+                        "Shutdown staging",
+                        "Shutdown staging instances",
+                        "Shutdown staging servers",
+                        "Stop all stage instances",
+                        "Stop all stage servers",
+                        "Stop all stage",
+                        "Shutdown stage",
+                        "Shutdown stage instances",
+                        "Shutdown stage servers"
+                    ]
+                },
+                {
+                    "name": "StopDevInstancesIntent",
+                    "slots": [],
+                    "samples": [
+                        "Stop all development instances",
+                        "Stop all development servers",
+                        "Stop all development",
+                        "Shutdown development",
+                        "Shutdown development instances",
+                        "Shutdown development servers",
+                        "Stop all dev instances",
+                        "Stop all dev servers",
+                        "Stop all dev",
+                        "Shutdown dev",
+                        "Shutdown dev instances",
+                        "Shutdown dev servers"
+                    ]
+                },
+                {
+                    "name": "StopUntaggedInstancesIntent",
+                    "slots": [],
+                    "samples": [
+                        "Stop all untagged instances",
+                        "Stop all untagged servers",
+                        "Stop all untagged instances",
+                        "Shutdown untagged",
+                        "Shutdown untagged instances",
+                        "Shutdown untagged servers"
+                    ]
+                },
+                {
+                    "name": "ResetInstancesIntent",
+                    "slots": [],
+                    "samples": [
+                        "Reset all instances",
+                        "Reset all servers",
+                        "Reboot all instances",
+                        "Reboot all servers",
+                        "Turn on my instances",
+                        "Turn on my servers",
+                        "Reset demo"
+                    ]
+                },
+                {
+                    "name": "GatherPublicAccessBucketsIntent",
+                    "slots": [],
+                    "samples": [
+                        "How many S three buckets do I have with public access",
+                        "Tell me how many buckets have public access",
+                        "How many public access buckets are",
+                        "Tell me how many buckets are publicly accessible",
+                        "S three buckets report",
+                        "Give me an S three report",
+                        "What is my S three bulnerabilty"
+                    ]
+                },
+                {
+                    "name": "GetECInstanceTypesIntent",
+                    "slots": [],
+                    "samples": [
+                        "What type of E C two instances are running",
+                        "What type of servers are running",
+                        "Tell me what type of servers are running",
+                        "Tell me what type of E C two instances are running",
+                        "What type of instances are running",
+                        "Tell me what type of instances are running"
+                    ]
+                },
+                                {
+                    "name": "describeInstanceIntent",
+                    "slots": [
+                        {
+                            "name": "InstanceList",
+                            "type": "InstanceList"
+                        }
+                    ],
+                    "samples": [
+                        "describe {InstanceList}",
+                        "Tell me more about {InstanceList}"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "InstanceList",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Dev Box six"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Dev Box five"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Dev Box four"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Dev Box three"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Dev Box two"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Dev Box One"
+                            }
+                        }
+                    ]
+                }
+                
+            ]
+            
+        }
+    }
+}

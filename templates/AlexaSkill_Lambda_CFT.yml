@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: "2010-09-09"
+# Description of what this CloudFormation Template is going to produce
+Description: AWS CloudFormation Template to deploy the lambda handler that will enable the Alexa AWS admin helper skill functionality.
+# StackName: SA-Launch-Capstone-Alexa-Skill-Lambda
+
+##############################################################################
+# NOTES: This template uses Exports produced by the following CF Templates
+#-----------------------------------------------------------------------------
+# PreReq-Required-Templates:
+#   - AlexaSkill_Infrastructure_CFT.yml
+##############################################################################
+
+# ###############################################
+# Template Parameters:
+# User Input values required for this template
+# ###############################################
+Parameters:
+  AlexaLambdaZipName:
+    Description: The name of the zip file in the code bucket that contains the Alexa AWSHelper Skill code.
+    Type: String
+    Default: "Alexa_AWSHelper_Skill.zip"
+
+  AlexaSkillId:
+    Description: The Skill ID of the Skill from the Alexa Developer Console (Found under Endpoint section)
+    Type: String
+    Default: "amzn1.ask.skill.70d77afb-bc4e-43cd-a49e-224adf368466"
+  
+
+# ################################################
+# Template MetaData:
+# Define Template Parameter Form rendering.
+# ################################################
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Template Parameters"
+        Parameters:
+          - AlexaLambdaZipName
+          - AlexaSkillId
+    ParameterLabels:
+      CreateAlexaLambdaRole:
+        default: Name of the Zip containing the skill code?
+
+
+# ###############################################
+# Template Resources:
+# Define AWS Resources that will be provisioned.
+# ###############################################
+Resources:
+  #========================
+  # IAM Role:
+  #========================
+  AlexaSkillLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: SA-Launch-Capstone-Alexa-AWSHelper-Skill
+      Description: Lambda function that drives the functionality of the Anycompany AWS Helper Alexa Skill
+      Runtime: python3.9
+      MemorySize: 256
+      Role: !ImportValue Alexa-AdminHelper-Lambda-Role-ARN
+      Handler: handler.lambda_handler
+      Code:
+        S3Bucket: !ImportValue Alexa-AdminHelper-Code-Bucket
+        S3Key: !Ref AlexaLambdaZipName
+      Timeout: 300
+      # VpcConfig:
+      #   SecurityGroupIds:
+      #     - 
+      #   SubnetIds:
+      #     - 
+
+  AlexaSkillLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt AlexaSkillLambda.Arn
+      Principal: alexa-appkit.amazon.com
+      EventSourceToken: !Ref AlexaSkillId
+  
+# ##############################################
+# Template Outputs:
+# Specify any outputs for the stack.
+# ##############################################
+Outputs:
+  # Lambda
+  AlexaSkillLambdaName:
+    Description: The Name of the Lambda created for the Alexa Anycompany AWS Admin Helper skill.
+    Value: !Ref AlexaSkillLambda
+    Export:
+      Name: 'Alexa-AdminHelper-Lambda'
+
+  AlexaSkillLambdaArn:
+    Description: The Arn of the Lambda created for the Alexa Anycompany AWS Admin Helper skill.
+    Value: !GetAtt 'AlexaSkillLambda.Arn'
+    Export:
+      Name: 'Alexa-AdminHelper-Lambda-Arn'
